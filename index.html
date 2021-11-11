@@ -50,7 +50,7 @@
 <script>
     var species_name = new URL(window.location.href).searchParams.get("species");
     if(!species_name){species_name = 'Adelie';}
-    let palmer_penguin_species = "../data/palmer_penguin_species.tsv";
+    let palmer_penguin_species = "multiview-2/data/palmer_penguin_species.tsv";
     // loading data
     d3.tsv(palmer_penguin_species).then(main)
 
