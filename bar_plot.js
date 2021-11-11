@@ -7,22 +7,18 @@ function bar_plot(Values, //column values to make histogram of
                   margin = 80
 )
 {
-    // Review the input data
-    console.log(Values)
     // assign which SVG element should be the host for the figure
-
     let axis = d3.select(`#${axis_key}`)
     let height= parseInt(axis.attr("height"));
     let width= parseInt(axis.attr("width"))-margin;
 
     // make a linear scale for the X Axis
     // we will use this for making bins and placing them
-    // alternative way: https://www.d3indepth.com/scales/#scaleband
     let xScale= d3.scaleLinear()
         .domain(d3.extent(Values))
         .range([margin,width]);
 
-    console.log([margin,width])
+
     // histogram function makes bins and the values for each bin
     // use xScale and number bins to calculate the bisn location and value
     let histogram = d3.histogram()
@@ -30,12 +26,10 @@ function bar_plot(Values, //column values to make histogram of
         .domain(xScale.domain())
         .thresholds(xScale.ticks(bins_count+1));
 
-    // generate the bins
     let bins = histogram(Values);
-    // review the bins
-    // console.log(bins)
 
-    // y will represent number of elements inside each bin. It is height of bar chart.
+
+    // y will represent number of elements inside each bin!
     let yScale= d3.scaleLinear()
         .domain([0,d3.max(bins,function(d) { return d.length; })])
         .range([height,0]);
@@ -45,12 +39,11 @@ function bar_plot(Values, //column values to make histogram of
     axis.selectAll('.bars')
         .data(bins)  // array of arrays (each array inside it is the values inside one bin)
         .enter()
-        .append("g") // for each bar append a group elements
-        .attr("class","bars")   // assign a class for styling
+        .append("g")
+        .attr("class","bars")
         .attr("transform",
             function(d) {
-                console.log(xScale(d.x0))
-                return `translate(${xScale(d.x0)} ,${yScale(d["length"])} )`;
+                return `translate(${xScale(d.x0)} ,${yScale(d.length)} )`;
             })
         .append('rect')
         .attr("width",
@@ -93,10 +86,10 @@ function h_bar_plot(Values, //column values to make histogram of
     // step 3 use the data to calculate histogram bin values
     let bins = histogram(Values);
     // step 4, now that we have the  bins and their numbers we can make the xscale
-    // alternative way: https://www.d3indepth.com/scales/#scaleband
     let xScale = d3.scaleLinear()
         .domain([0,d3.max(bins,function (d){return d.length})])
         .range([0,width])
+
     // now that we have the scales let us add the bars to the svg
     axis.selectAll('.bars')
         .data(bins)  // array of arrays (each array inside it is the values inside one bin)
@@ -113,9 +106,8 @@ function h_bar_plot(Values, //column values to make histogram of
                 return xScale(d.length);
             })
         .attr("height", function() {
-            // static bar thickness!
-            // alternative way: https://www.d3indepth.com/scales/#scaleband
-            return (height)/bins_count*.50;})
+
+            return (height)/bins_count*.50; }) // static bar thickness!
         .style("fill", "#509ec8")
 
 }

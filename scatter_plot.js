@@ -1,9 +1,11 @@
-function scatter_plot(X,Y,markersize,
+function scatter_plot(X,Y,R,
                       ColorData,
                       axis_key,
                       title="",
                       xLabel="",
                       yLabel="",
+                      legend=[],
+                      legendcolors=[],
                       margin = 100)
 {
     function data_axis_pad(data,pad=.05){
@@ -12,11 +14,12 @@ function scatter_plot(X,Y,markersize,
 
     let xScale= d3.scaleLinear().domain(data_axis_pad(d3.extent(X))).range([0+margin,1000-margin])
     let yScale= d3.scaleLinear().domain(data_axis_pad(d3.extent(Y))).range([1000-margin,0 + margin])
-    let colorScale= d3.scaleLinear().domain(d3.extent(ColorData)).range(['steelblue','brown'])
+    let rScale= d3.scaleLinear().domain(d3.extent(R,function (d){return d})).range([4,12])
+    let colorScale= d3.scaleOrdinal().domain(d3.extent(ColorData)).range(legendcolors)
     let axis = d3.select(`#${axis_key}`)
 
     axis.selectAll('.markers')
-        .data(X)
+        .data(R)
         .enter()
         .append('g')
         .attr('transform', function(d,i) {
@@ -24,25 +27,25 @@ function scatter_plot(X,Y,markersize,
         .append('circle')
         .attr("class",function (d,i){
                     return `cls_${i}`})
-        .attr("r",markersize)
+        .attr("r",function (d){return rScale(d)})
         .attr("fill",function (d,i){return colorScale(ColorData[i])})
-        .on("mouseenter",function (){
+        .on("mouseenter",function (d,i){
             let mouse_selected_element_class=d3.select(this).attr('class')
-            d3.selectAll(`circle`).classed("highlighted",false).attr("r",markersize)
+            document.getElementById("bb1").innerHTML='Culmen Length: '+String(X[mouse_selected_element_class.substring(4)])+' mm';
+            document.getElementById("bb2").innerHTML='Culmen Depth: '+String(Y[mouse_selected_element_class.substring(4)])+' mm';
+            document.getElementById("bb3").innerHTML='Flipper Length: '+String(R[mouse_selected_element_class.substring(4)])+' mm';
+            d3.selectAll(`circle`).classed("highlighted",false).attr("r",function (d){return rScale(d)})
             d3.selectAll(`.${mouse_selected_element_class}`)
                 .classed("highlighted",true)
                 .transition()
                 .duration(1000)
                 .ease(d3.easeBounceOut)
-                .attr("r",markersize*4)
+                .attr("r",function (d){return rScale(d)*4})
 
         })
         .on("mouseleave",function(){
-            d3.selectAll(`circle`).classed("highlighted",false).transition().duration(1000).ease(d3.easeBounceOut).attr("r",markersize)
+            d3.selectAll(`circle`).classed("highlighted",false).transition().duration(1000).ease(d3.easeBounceOut).attr("r",function (d){return rScale(d)})
         })
-
-
-
 
 
     // x and y Axis function
@@ -77,5 +80,21 @@ function scatter_plot(X,Y,markersize,
         .attr("text-anchor","middle")
         .text(title)
         .attr("class","plotTitle")
+    // Legend
+        if (legend.length>0){
+            legend.forEach(
+                function (d,i){
+                let space = 50
+                let lgnd = axis.append("g").attr('transform',`translate(${900},${i*50 + space})`);
+                lgnd.append('rect').attr('width',function (d){return 40})
+                                   .attr('height',function (d){return 40})
+                                   .attr('fill',function (d){
+                                       return legendcolors[i]
+                                   })
+                    .attr("class",d)
+                lgnd.append('text').attr("class","legend").attr("dx","-80").attr("dy","30").text(d)
+    
+            })
+        }
 
 }
